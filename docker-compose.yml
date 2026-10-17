@@ -1,0 +1,31 @@
+services:
+  # Contenedor 1: La Base de Datos
+  servidor_db_2:
+    image: mysql:8.0
+    container_name: mysql_bd_2
+    restart: always
+    # Pasamos el archivo .env directamente para mayor seguridad
+    env_file:
+      - .env
+    ports:
+      - "3307:3306"
+    volumes:
+      - datos_mysql:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql # Inyección del script inicial
+
+  # Contenedor 2: El Backend en Flask
+  api_backend:
+    build: ./backend  # Le decimos que construya la imagen usando el Dockerfile
+    container_name: backend_flask
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./backend:/app  # Volumen sincronizado: lo que edites en tu PC, se actualiza en el contenedor
+    depends_on:
+      - servidor_db_2    # Le dice a Flask que espere a que la base de datos exista
+
+volumes:
+  datos_mysql:

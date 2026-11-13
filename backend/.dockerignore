@@ -1,0 +1,6 @@
+# Lo que no debe copiarse dentro de la imagen con "COPY . ."
+__pycache__/
+*.pyc
+.env
+venv/
+.venv/

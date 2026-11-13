@@ -1,0 +1,27 @@
+info:
+  name: Actualizar Pedido
+  type: http
+  seq: 4
+
+http:
+  method: PUT
+  url: http://localhost:5001/api/pedidos/13
+  body:
+    type: json
+    data: |-
+      {
+        "id_tercero": 1,
+        "id_usuario": 6,
+        "detalles": [
+          {"id_producto": 14, "cantidad": 10, "precioUnitario": 85000},
+          {"id_producto": 13, "cantidad": 5, "precioUnitario": 130000}
+        ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+

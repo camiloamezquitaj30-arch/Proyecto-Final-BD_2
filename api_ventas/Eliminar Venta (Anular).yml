@@ -1,0 +1,15 @@
+info:
+  name: Eliminar Venta (Anular)
+  type: http
+  seq: 5
+
+http:
+  method: PUT
+  url: http://localhost:5001/api/ventas/3/anular
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

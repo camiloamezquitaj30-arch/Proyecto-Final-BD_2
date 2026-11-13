@@ -1,0 +1,14 @@
+info:
+  name: Listar Terceros
+  type: http
+
+http:
+  method: GET
+  url: http://localhost:5001/api/terceros
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

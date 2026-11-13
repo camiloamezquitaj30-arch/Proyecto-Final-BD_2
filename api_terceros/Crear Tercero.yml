@@ -1,0 +1,22 @@
+info:
+  name: Crear Tercero
+  type: http
+
+http:
+  method: POST
+  url: http://localhost:5001/api/terceros
+  body:
+    type: json
+    data: |-
+      {
+        "nombre": "Juan Apretaito",
+        "correo": "manuelapretado@gmail.com",
+        "contacto": "3217934861"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

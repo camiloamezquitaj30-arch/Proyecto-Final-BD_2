@@ -1,0 +1,28 @@
+info:
+  name: Actualizar Producto
+  type: http
+  seq: 4
+
+http:
+  method: PUT
+  url: http://localhost:5001/api/productos/13
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "nombre": "Iphone 17 Ultra pro Max",
+        "cantidad_stock": 30,
+        "nivel_minimo": 8,
+        "precioCompra": 130000.00,
+        "precioVenta": 200000.00,
+        "tarifa_iva": 0.19
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

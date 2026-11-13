@@ -1,0 +1,27 @@
+info:
+  name: Actualizar Venta
+  type: http
+  seq: 4
+
+http:
+  method: PUT
+  url: http://localhost:5001/api/ventas/1
+  body:
+    type: json
+    data: |-
+      {
+        "id_tercero": 3,
+        "id_usuario": 1,
+        "detalles": [
+          {"id_producto": 5, "cantidad": 2, "precioUnitario": 120000},
+          {"id_producto": 8, "cantidad": 1, "precioUnitario": 45000}
+        ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+

@@ -1,0 +1,28 @@
+info:
+  name: Crear Venta
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: http://localhost:5001/api/ventas
+  body:
+    type: json
+    data: |-
+      {
+            "id_tercero": 1,
+            "id_usuario": 6,
+            "detalles":
+        [
+                  {"id_producto": 13, "cantidad": 5, "precioUnitario": 2000000}
+                      ,
+                  {"id_producto": 14, "cantidad": 5, "precioUnitario": 105000}
+        ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

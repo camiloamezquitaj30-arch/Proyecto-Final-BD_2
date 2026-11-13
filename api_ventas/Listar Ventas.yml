@@ -1,0 +1,14 @@
+info:
+  name: Listar Ventas
+  type: http
+
+http:
+  method: GET
+  url: http://localhost:5001/api/ventas
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

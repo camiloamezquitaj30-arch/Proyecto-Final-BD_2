@@ -1,0 +1,28 @@
+info:
+  name: Crear Producto
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: http://localhost:5001/api/productos
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "nombre": "Teclado Mecanico RGB",
+        "cantidad_stock": 25,
+        "nivel_minimo": 5,
+        "precioCompra": 120000.00,
+        "precioVenta": 180000.00,
+        "tarifa_iva": 0.19
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

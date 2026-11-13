@@ -1,0 +1,15 @@
+info:
+  name: Consultar Venta Completa por ID
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: http://localhost:5001/api/ventas/4
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

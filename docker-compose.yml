@@ -8,10 +8,21 @@ services:
     env_file:
       - .env
     ports:
-      - "3307:3306"
+      - "3308:3306"
     volumes:
       - datos_mysql:/var/lib/mysql
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql # Inyección del script inicial
+    healthcheck:
+      # "healthy" = MySQL ya acepta conexiones por red, no solo que el contenedor arrancó.
+      # Se usa 127.0.0.1 (TCP) a propósito: mientras corre init.sql, MySQL levanta un
+      # servidor temporal que solo escucha por socket, y con "localhost" pasaría antes de tiempo.
+      # $$ evita que Compose interprete la variable; la expande el shell del contenedor.
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+    networks:
+      - red_erp
 
   # Contenedor 2: El Backend en Flask
   api_backend:
@@ -25,7 +36,15 @@ services:
     volumes:
       - ./backend:/app  # Volumen sincronizado: lo que edites en tu PC, se actualiza en el contenedor
     depends_on:
-      - servidor_db_2    # Le dice a Flask que espere a que la base de datos exista
+      servidor_db_2:
+        condition: service_healthy  # Flask arranca cuando MySQL ya acepta conexiones
+    networks:
+      - red_erp
 
 volumes:
   datos_mysql:
+
+# Red común: los contenedores se encuentran por el nombre de su servicio
+networks:
+  red_erp:
+    driver: bridge

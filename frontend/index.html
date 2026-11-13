@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrativo ERP | Bases de Datos II</title>
+
+    <!-- Bootstrap 5.3 CSS (CDN) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+    <!-- FontAwesome 6 Icons (CDN) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+
+    <!-- Barra de Navegación Superior -->
+    <header class="navbar navbar-expand-lg navbar-dark bg-dark py-3 shadow-sm">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <i class="fa-solid fa-database text-primary me-2 fa-lg"></i>
+                <div>
+                    <span class="fs-5 fw-bold">Sistema ERP</span>
+                    <small class="d-block text-secondary fs-6">Bases de Datos II - Corte 3</small>
+                </div>
+            </a>
+
+            <div class="d-flex align-items-center gap-3">
+                <!-- Indicador interactivo del estado del Backend Flask -->
+                <span id="badgeConexionBackend"
+                    class="badge bg-secondary-subtle text-secondary border px-3 py-2 cursor-pointer"
+                    title="Clic para comprobar conexión">
+                    <span class="spinner-grow spinner-grow-sm me-1" role="status"></span> Comprobando API...
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container-fluid px-4 py-4">
+
+        <!-- Tarjetas de Estadísticas Principales (KPIs) -->
+        <section class="row g-3 mb-4">
+            <div class="col-6 col-md-4 col-lg">
+                <div class="card kpi-card shadow-sm border-0 rounded-3 h-100">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="kpi-icon bg-primary-subtle text-primary me-3">
+                            <i class="fa-solid fa-boxes-stacked fa-xl"></i>
+                        </div>
+                        <div>
+                            <span class="text-muted small fw-semibold">Productos Activos</span>
+                            <h4 id="statTotalProductos" class="mb-0 fw-bold">--</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-lg">
+                <div class="card kpi-card shadow-sm border-0 rounded-3 h-100">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="kpi-icon bg-success-subtle text-success me-3">
+                            <i class="fa-solid fa-warehouse fa-xl"></i>
+                        </div>
+                        <div>
+                            <span class="text-muted small fw-semibold">Total Stock en Bodega</span>
+                            <h4 id="statTotalStock" class="mb-0 fw-bold">--</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-4 col-lg">
+                <div class="card kpi-card shadow-sm border-0 rounded-3 h-100">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="kpi-icon bg-info-subtle text-info me-3">
+                            <i class="fa-solid fa-users fa-xl"></i>
+                        </div>
+                        <div>
+                            <span class="text-muted small fw-semibold">Terceros Activos</span>
+                            <h4 id="statTotalTerceros" class="mb-0 fw-bold">--</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-6 col-lg">
+                <div class="card kpi-card shadow-sm border-0 rounded-3 h-100">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="kpi-icon bg-warning-subtle text-warning-emphasis me-3">
+                            <i class="fa-solid fa-cash-register fa-xl"></i>
+                        </div>
+                        <div>
+                            <span class="text-muted small fw-semibold">Ventas Registradas</span>
+                            <h4 id="statTotalVentas" class="mb-0 fw-bold">--</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg">
+                <div class="card kpi-card shadow-sm border-0 rounded-3 h-100">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="kpi-icon bg-secondary-subtle text-secondary me-3">
+                            <i class="fa-solid fa-truck-ramp-box fa-xl"></i>
+                        </div>
+                        <div>
+                            <span class="text-muted small fw-semibold">Pedidos Registrados</span>
+                            <h4 id="statTotalPedidos" class="mb-0 fw-bold">--</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Selector de Módulos (Pestañas) -->
+        <ul class="nav nav-pills flex-wrap gap-1 mb-4 bg-white p-2 rounded-3 shadow-sm border" id="pills-tab"
+            role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="tab-productos-btn" data-bs-toggle="tab"
+                    data-bs-target="#tab-productos" type="button" role="tab">
+                    <i class="fa-solid fa-cube me-2"></i>Productos
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-terceros-btn" data-bs-toggle="tab" data-bs-target="#tab-terceros"
+                    type="button" role="tab">
+                    <i class="fa-solid fa-id-card me-2"></i>Terceros
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-ventas-btn" data-bs-toggle="tab" data-bs-target="#tab-ventas"
+                    type="button" role="tab">
+                    <i class="fa-solid fa-cart-shopping me-2"></i>Ventas
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-pedidos-btn" data-bs-toggle="tab" data-bs-target="#tab-pedidos"
+                    type="button" role="tab">
+                    <i class="fa-solid fa-clipboard-list me-2"></i>Pedidos
+                </button>
+            </li>
+        </ul>
+
+        <!-- Contenido de las Pestañas -->
+        <div class="tab-content" id="pills-tabContent">
+
+            <!-- ========================================== -->
+            <!-- PESTAÑA 1: MÓDULO DE PRODUCTOS -->
+            <!-- ========================================== -->
+            <div class="tab-pane fade show active" id="tab-productos" role="tabpanel">
+                <div class="card border-0 shadow-sm rounded-3">
+                    <div
+                        class="card-header bg-white py-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+                        <div>
+                            <h5 class="mb-0 fw-bold text-dark">
+                                <i class="fa-solid fa-boxes-stacked text-primary me-2"></i>Gestión de Inventario de
+                                Productos
+                            </h5>
+                            <small class="text-muted">Operaciones CRUD conectadas a <code>/api/productos</code></small>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <button id="btnRefrescarProductos" class="btn btn-outline-secondary btn-sm"
+                                title="Actualizar lista">
+                                <i class="fa-solid fa-rotate me-1"></i> Refrescar
+                            </button>
+                            <button id="btnNuevoProducto" class="btn btn-primary btn-sm">
+                                <i class="fa-solid fa-plus me-1"></i> Nuevo Producto
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <!-- Barra de Búsqueda por ID -->
+                        <div class="row mb-3">
+                            <div class="col-12 col-md-5">
+                                <form id="formBuscarProducto" class="input-group">
+                                    <span class="input-group-text bg-light"><i
+                                            class="fa-solid fa-magnifying-glass"></i></span>
+                                    <input type="number" id="inputBuscarProductoId" class="form-control"
+                                        placeholder="Buscar por ID de producto (ej: 1)..." min="1">
+                                    <button class="btn btn-outline-primary" type="submit">Buscar</button>
+                                    <button class="btn btn-outline-secondary" type="button"
+                                        id="btnLimpiarBuscarProducto" title="Limpiar filtro">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Tabla de Productos -->
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center" style="width: 80px;">ID</th>
+                                        <th>Nombre del Producto</th>
+                                        <th class="text-center" style="width: 160px;">Stock</th>
+                                        <th class="text-end" style="width: 170px;">Precio Venta</th>
+                                        <th class="text-center" style="width: 110px;">Estado</th>
+                                        <th class="text-end" style="width: 160px;">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaProductosBody">
+                                    <!-- Rellenado dinámicamente por productos.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- PESTAÑA 2: MÓDULO DE TERCEROS -->
+            <!-- ========================================== -->
+            <div class="tab-pane fade" id="tab-terceros" role="tabpanel">
+                <div class="card border-0 shadow-sm rounded-3">
+                    <div
+                        class="card-header bg-white py-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+                        <div>
+                            <h5 class="mb-0 fw-bold text-dark">
+                                <i class="fa-solid fa-users text-primary me-2"></i>Gestión de Terceros (Clientes /
+                                Proveedores)
+                            </h5>
+                            <small class="text-muted">Operaciones CRUD conectadas a <code>/api/terceros</code></small>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <button id="btnRefrescarTerceros" class="btn btn-outline-secondary btn-sm"
+                                title="Actualizar lista">
+                                <i class="fa-solid fa-rotate me-1"></i> Refrescar
+                            </button>
+                            <button id="btnNuevoTercero" class="btn btn-primary btn-sm">
+                                <i class="fa-solid fa-user-plus me-1"></i> Nuevo Tercero
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <!-- Barra de Búsqueda por ID -->
+                        <div class="row mb-3">
+                            <div class="col-12 col-md-5">
+                                <form id="formBuscarTercero" class="input-group">
+                                    <span class="input-group-text bg-light"><i
+                                            class="fa-solid fa-magnifying-glass"></i></span>
+                                    <input type="number" id="inputBuscarTerceroId" class="form-control"
+                                        placeholder="Buscar por ID de tercero (ej: 1)..." min="1">
+                                    <button class="btn btn-outline-primary" type="submit">Buscar</button>
+                                    <button class="btn btn-outline-secondary" type="button" id="btnLimpiarBuscarTercero"
+                                        title="Limpiar filtro">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Tabla de Terceros -->
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center" style="width: 80px;">ID</th>
+                                        <th>Nombre Completo</th>
+                                        <th>Correo Electrónico</th>
+                                        <th>Contacto / Celular</th>
+                                        <th class="text-center" style="width: 110px;">Estado</th>
+                                        <th class="text-end" style="width: 130px;">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaTercerosBody">
+                                    <!-- Rellenado dinámicamente por terceros.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- PESTAÑA 3: MÓDULO DE VENTAS -->
+            <!-- ========================================== -->
+            <div class="tab-pane fade" id="tab-ventas" role="tabpanel">
+                <div class="card border-0 shadow-sm rounded-3">
+                    <div
+                        class="card-header bg-white py-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+                        <div>
+                            <h5 class="mb-0 fw-bold text-dark">
+                                <i class="fa-solid fa-cart-shopping text-primary me-2"></i>Gestión de Ventas
+                                (Maestro-Detalle)
+                            </h5>
+                            <small class="text-muted">Operaciones CRUD conectadas a <code>/api/ventas</code></small>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <button id="btnRefrescarVentas" class="btn btn-outline-secondary btn-sm"
+                                title="Actualizar lista">
+                                <i class="fa-solid fa-rotate me-1"></i> Refrescar
+                            </button>
+                            <button id="btnNuevaVenta" class="btn btn-primary btn-sm">
+                                <i class="fa-solid fa-plus me-1"></i> Nueva Venta
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <!-- Barra de Búsqueda por ID -->
+                        <div class="row mb-3">
+                            <div class="col-12 col-md-5">
+                                <form id="formBuscarVenta" class="input-group">
+                                    <span class="input-group-text bg-light"><i
+                                            class="fa-solid fa-magnifying-glass"></i></span>
+                                    <input type="number" id="inputBuscarVentaId" class="form-control"
+                                        placeholder="Buscar venta completa por ID (ej: 2)..." min="1">
+                                    <button class="btn btn-outline-primary" type="submit">Buscar</button>
+                                    <button class="btn btn-outline-secondary" type="button" id="btnLimpiarBuscarVenta"
+                                        title="Limpiar filtro">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Tabla de Ventas -->
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center" style="width: 80px;">ID</th>
+                                        <th>Fecha</th>
+                                        <th class="text-center" style="width: 110px;">ID Usuario</th>
+                                        <th class="text-center" style="width: 110px;">ID Tercero</th>
+                                        <th class="text-end" style="width: 170px;">Total Venta</th>
+                                        <th class="text-center" style="width: 130px;">Estado</th>
+                                        <th class="text-end" style="width: 160px;">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaVentasBody">
+                                    <!-- Rellenado dinámicamente por ventas.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- PESTAÑA 4: MÓDULO DE PEDIDOS -->
+            <!-- ========================================== -->
+            <div class="tab-pane fade" id="tab-pedidos" role="tabpanel">
+                <div class="card border-0 shadow-sm rounded-3">
+                    <div
+                        class="card-header bg-white py-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+                        <div>
+                            <h5 class="mb-0 fw-bold text-dark">
+                                <i class="fa-solid fa-clipboard-list text-primary me-2"></i>Gestión de Pedidos
+                                (Maestro-Detalle)
+                            </h5>
+                            <small class="text-muted">Operaciones CRUD conectadas a <code>/api/pedidos</code></small>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <button id="btnRefrescarPedidos" class="btn btn-outline-secondary btn-sm"
+                                title="Actualizar lista">
+                                <i class="fa-solid fa-rotate me-1"></i> Refrescar
+                            </button>
+                            <button id="btnNuevoPedido" class="btn btn-primary btn-sm">
+                                <i class="fa-solid fa-plus me-1"></i> Nuevo Pedido
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <!-- Barra de Búsqueda por ID -->
+                        <div class="row mb-3">
+                            <div class="col-12 col-md-5">
+                                <form id="formBuscarPedido" class="input-group">
+                                    <span class="input-group-text bg-light"><i
+                                            class="fa-solid fa-magnifying-glass"></i></span>
+                                    <input type="number" id="inputBuscarPedidoId" class="form-control"
+                                        placeholder="Buscar pedido completo por ID (ej: 13)..." min="1">
+                                    <button class="btn btn-outline-primary" type="submit">Buscar</button>
+                                    <button class="btn btn-outline-secondary" type="button" id="btnLimpiarBuscarPedido"
+                                        title="Limpiar filtro">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Tabla de Pedidos -->
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center" style="width: 80px;">ID</th>
+                                        <th>Fecha</th>
+                                        <th class="text-center" style="width: 110px;">ID Usuario</th>
+                                        <th class="text-center" style="width: 110px;">ID Tercero</th>
+                                        <th class="text-end" style="width: 170px;">Total Pedido</th>
+                                        <th class="text-center" style="width: 130px;">Estado</th>
+                                        <th class="text-end" style="width: 160px;">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaPedidosBody">
+                                    <!-- Rellenado dinámicamente por pedidos.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ========================================== -->
+    <!-- MODAL: REGISTRAR / EDITAR PRODUCTO -->
+    <!-- ========================================== -->
+    <div class="modal fade" id="modalProducto" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-3 shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="modalProductoTitulo">Nuevo Producto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <form id="formProducto">
+                    <div class="modal-body">
+                        <!-- ID oculto para discernir entre POST (Crear) y PUT (Actualizar) -->
+                        <input type="hidden" id="productoId">
+
+                        <div class="mb-3">
+                            <label for="productoNombre" class="form-label fw-semibold">Nombre del Producto <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="productoNombre" required maxlength="100"
+                                placeholder="Ej: Teclado Mecánico RGB">
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label for="productoStock" class="form-label fw-semibold">Cantidad en Stock <span
+                                        class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="productoStock" required min="0" value="0">
+                            </div>
+                            <div class="col-6">
+                                <label for="productoNivelMinimo" class="form-label fw-semibold">Nivel Mínimo <span
+                                        class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="productoNivelMinimo" required min="0"
+                                    value="5">
+                            </div>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label for="productoPrecioCompra" class="form-label fw-semibold">Precio Compra
+                                    ($)</label>
+                                <input type="number" class="form-control" id="productoPrecioCompra" step="0.01" min="0"
+                                    value="0.00">
+                            </div>
+                            <div class="col-6">
+                                <label for="productoPrecioVenta" class="form-label fw-semibold">Precio Venta ($)</label>
+                                <input type="number" class="form-control" id="productoPrecioVenta" step="0.01" min="0"
+                                    value="0.00">
+                            </div>
+                        </div>
+
+                        <div class="mb-2">
+                            <label for="productoIva" class="form-label fw-semibold">Tarifa IVA</label>
+                            <select class="form-select" id="productoIva">
+                                <option value="0.19">19% (General - 0.19)</option>
+                                <option value="0.05">5% (Reducido - 0.05)</option>
+                                <option value="0.00">0% (Exento - 0.00)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary"
+                            data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" id="btnGuardarProducto" class="btn btn-primary">
+                            <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Producto
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: DETALLE COMPLETO DEL PRODUCTO -->
+    <!-- ========================================== -->
+    <div class="modal fade" id="modalDetalleProducto" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-3 shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">
+                        <i class="fa-solid fa-circle-info text-info me-2"></i>Ficha Técnica del Producto
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 id="detalleProductoNombre" class="fw-bold mb-0 text-primary"></h4>
+                        <span id="detalleProductoId" class="badge bg-secondary fs-6"></span>
+                    </div>
+                    <ul class="list-group list-group-flush border rounded-3 mb-0">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="text-muted">Cantidad en Stock:</span>
+                            <span id="detalleProductoStock" class="fw-bold"></span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="text-muted">Nivel Mínimo Recomendado:</span>
+                            <span id="detalleProductoNivelMinimo" class="fw-bold"></span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="text-muted">Precio de Compra:</span>
+                            <span id="detalleProductoPrecioCompra" class="fw-bold text-secondary"></span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="text-muted">Precio de Venta al Público:</span>
+                            <span id="detalleProductoPrecioVenta" class="fw-bold text-success"></span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="text-muted">Tarifa de IVA:</span>
+                            <span id="detalleProductoIva" class="fw-bold"></span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span class="text-muted">Estado del Registro:</span>
+                            <span id="detalleProductoEstado"></span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: REGISTRAR / EDITAR TERCERO -->
+    <!-- ========================================== -->
+    <div class="modal fade" id="modalTercero" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-3 shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="modalTerceroTitulo">Nuevo Tercero</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <form id="formTercero">
+                    <div class="modal-body">
+                        <!-- ID oculto para discernir entre POST (Crear) y PUT (Actualizar) -->
+                        <input type="hidden" id="terceroId">
+
+                        <div class="mb-3">
+                            <label for="terceroNombre" class="form-label fw-semibold">Nombre Completo <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="terceroNombre" required maxlength="100"
+                                placeholder="Ej: Johan Vásquez">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="terceroCorreo" class="form-label fw-semibold">Correo Electrónico <span
+                                    class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="terceroCorreo" required maxlength="100"
+                                placeholder="nombre@correo.com">
+                            <div class="form-text">Debe ser único en el sistema.</div>
+                        </div>
+
+                        <div class="mb-2">
+                            <label for="terceroContacto" class="form-label fw-semibold">Teléfono / Celular de Contacto
+                                <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="terceroContacto" required maxlength="30"
+                                placeholder="Ej: 3001234567">
+                            <div class="form-text">Debe ser único en el sistema.</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary"
+                            data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" id="btnGuardarTercero" class="btn btn-primary">
+                            <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Tercero
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: REGISTRAR / EDITAR VENTA -->
+    <!-- ========================================== -->
+    <div class="modal fade" id="modalVenta" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content rounded-3 shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="modalVentaTitulo">Nueva Venta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <form id="formVenta">
+                    <div class="modal-body">
+                        <input type="hidden" id="ventaId">
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="ventaIdTercero" class="form-label fw-semibold">Tercero (Cliente) <span
+                                        class="text-danger">*</span></label>
+                                <select class="form-select" id="ventaIdTercero" required>
+                                    <option value="">Cargando terceros...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="ventaIdUsuario" class="form-label fw-semibold">ID Usuario <span
+                                        class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="ventaIdUsuario" required min="1"
+                                    placeholder="Ej: 5, 6 o 7">
+                                <div class="form-text">ID del usuario registrado en la tabla <code>usuarios</code>.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label fw-bold mb-0">
+                                <i class="fa-solid fa-basket-shopping text-primary me-1"></i> Productos de la Venta
+                                (`detalles`)
+                            </label>
+                            <button type="button" id="btnAgregarItemVenta" class="btn btn-outline-primary btn-sm">
+                                <i class="fa-solid fa-plus me-1"></i> Agregar Producto
+                            </button>
+                        </div>
+
+                        <div id="ventaDetallesContainer" class="d-flex flex-column gap-2 mb-3">
+                            <!-- Filas dinámicas generadas por ventas.js -->
+                        </div>
+
+                        <div class="alert alert-light border d-flex justify-content-between align-items-center mb-0">
+                            <span class="fw-semibold text-muted">Subtotal estimado (sin IVA):</span>
+                            <span id="ventaTotalEstimado" class="fs-5 fw-bold text-primary">$0</span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary"
+                            data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" id="btnGuardarVenta" class="btn btn-primary">
+                            <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Venta
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: VER VENTA COMPLETA -->
+    <!-- ========================================== -->
+    <div class="modal fade" id="modalDetalleVentaCompleto" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content rounded-3 shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">
+                        <i class="fa-solid fa-receipt text-info me-2"></i>Detalle Completo de la Venta <span
+                            id="verVentaId" class="badge bg-secondary ms-1"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row g-2 mb-3 bg-light p-3 rounded-3 border">
+                        <div class="col-md-4">
+                            <small class="text-muted d-block">Fecha de Venta</small>
+                            <span id="verVentaFecha" class="fw-semibold"></span>
+                        </div>
+                        <div class="col-md-2">
+                            <small class="text-muted d-block">ID Usuario</small>
+                            <span id="verVentaUsuario" class="fw-semibold"></span>
+                        </div>
+                        <div class="col-md-2">
+                            <small class="text-muted d-block">ID Tercero</small>
+                            <span id="verVentaTercero" class="fw-semibold"></span>
+                        </div>
+                        <div class="col-md-2">
+                            <small class="text-muted d-block">Estado</small>
+                            <span id="verVentaEstado"></span>
+                        </div>
+                        <div class="col-md-2 text-md-end">
+                            <small class="text-muted d-block">Total (c/IVA)</small>
+                            <span id="verVentaTotal" class="fw-bold text-success"></span>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold mb-2">Productos incluidos</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">ID Det.</th>
+                                    <th>Producto</th>
+                                    <th class="text-center">Cant.</th>
+                                    <th class="text-end">Precio Unit.</th>
+                                    <th class="text-center">IVA</th>
+                                    <th class="text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="verVentaDetallesBody">
+                                <!-- Rellenado por ventas.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: REGISTRAR / EDITAR PEDIDO -->
+    <!-- ========================================== -->
+    <div class="modal fade" id="modalPedido" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content rounded-3 shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="modalPedidoTitulo">Nuevo Pedido</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <form id="formPedido">
+                    <div class="modal-body">
+                        <input type="hidden" id="pedidoId">
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="pedidoIdTercero" class="form-label fw-semibold">Tercero (Proveedor /
+                                    Cliente) <span class="text-danger">*</span></label>
+                                <select class="form-select" id="pedidoIdTercero" required>
+                                    <option value="">Cargando terceros...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="pedidoIdUsuario" class="form-label fw-semibold">ID Usuario <span
+                                        class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="pedidoIdUsuario" required min="1"
+                                    placeholder="Ej: 5, 6 o 7">
+                                <div class="form-text">ID del usuario registrado en la tabla <code>usuarios</code>.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label fw-bold mb-0">
+                                <i class="fa-solid fa-boxes-stacked text-primary me-1"></i> Productos del Pedido
+                                (`detalles`)
+                            </label>
+                            <button type="button" id="btnAgregarItemPedido" class="btn btn-outline-primary btn-sm">
+                                <i class="fa-solid fa-plus me-1"></i> Agregar Producto
+                            </button>
+                        </div>
+
+                        <div id="pedidoDetallesContainer" class="d-flex flex-column gap-2 mb-3">
+                            <!-- Filas dinámicas generadas por pedidos.js -->
+                        </div>
+
+                        <div class="alert alert-light border d-flex justify-content-between align-items-center mb-0">
+                            <span class="fw-semibold text-muted">Subtotal estimado (sin IVA):</span>
+                            <span id="pedidoTotalEstimado" class="fs-5 fw-bold text-primary">$0</span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary"
+                            data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" id="btnGuardarPedido" class="btn btn-primary">
+                            <i class="fa-solid fa-floppy-disk me-1"></i> Guardar Pedido
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: VER PEDIDO COMPLETO -->
+    <!-- ========================================== -->
+    <div class="modal fade" id="modalDetallePedidoCompleto" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content rounded-3 shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">
+                        <i class="fa-solid fa-file-invoice text-info me-2"></i>Detalle Completo del Pedido <span
+                            id="verPedidoId" class="badge bg-secondary ms-1"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row g-2 mb-3 bg-light p-3 rounded-3 border">
+                        <div class="col-md-4">
+                            <small class="text-muted d-block">Fecha de Pedido</small>
+                            <span id="verPedidoFecha" class="fw-semibold"></span>
+                        </div>
+                        <div class="col-md-2">
+                            <small class="text-muted d-block">ID Usuario</small>
+                            <span id="verPedidoUsuario" class="fw-semibold"></span>
+                        </div>
+                        <div class="col-md-2">
+                            <small class="text-muted d-block">ID Tercero</small>
+                            <span id="verPedidoTercero" class="fw-semibold"></span>
+                        </div>
+                        <div class="col-md-2">
+                            <small class="text-muted d-block">Estado</small>
+                            <span id="verPedidoEstado"></span>
+                        </div>
+                        <div class="col-md-2 text-md-end">
+                            <small class="text-muted d-block">Total (c/IVA)</small>
+                            <span id="verPedidoTotal" class="fw-bold text-success"></span>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold mb-2">Productos incluidos</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">ID Det.</th>
+                                    <th>Producto</th>
+                                    <th class="text-center">Cant.</th>
+                                    <th class="text-end">Precio Unit.</th>
+                                    <th class="text-center">IVA</th>
+                                    <th class="text-end">Subtotal</th>
+                                    <th class="text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="verPedidoDetallesBody">
+                                <!-- Rellenado por pedidos.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5.3 JS Bundle con Popper (CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+
+    <!-- SweetAlert2 (CDN) para alertas visuales elegantes -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Es muy buena para los avisos en general se vean más elegantes que 10 -->
+
+    <!-- Script principal de la aplicación (Módulos ES6) -->
+    <script type="module" src="js/app.js"></script>
+</body>
+
+</html>
